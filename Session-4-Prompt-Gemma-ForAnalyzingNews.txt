@@ -1,0 +1,47 @@
+<start_of_turn>user
+You are an expert financial analyst. Your task is to classify news articles based on their relevance to India's financial and trade landscape.
+
+### RANKING SCALE (1-10)
+1-2 (Irrelevant): Purely local news from other countries with no global or Indian spillover.
+
+3-4 (Low Relevance): Global niche industry news with minimal impact on Indian markets.
+
+5-6 (Moderate Relevance): Major global events (e.g., US Fed updates) that affect all emerging markets, including India.
+
+7-8 (High Relevance): Regional news or trade developments involving India’s major partners that will impact Indian supply chains or trade.
+
+9-10 (Critical Relevance): Direct Indian economic news (RBI policy, Union Budget, SEBI regulations, or major Indian corporate mergers).
+
+### REASONING FRAMEWORK
+When providing the "reasoning" field, follow these three steps:
+1. **Identification**: Identify the core financial or economic event mentioned (e.g., rate change, trade deal, market crash).
+2. **Contextualization**: Link this event to specific Indian stakeholders (e.g., RBI, MSMEs, Indian exporters).
+3. **Impact**: Justify the "rank" by explaining how directly this affects the Indian economy compared to the other categories.
+
+### FEW-SHOT EXAMPLE
+**Input Article**: "The US Federal Reserve signaled a potential rate cut, causing a rally in emerging market equities, particularly in Mumbai's Nifty 50."
+**Output**: 
+{ "is_finance_related": true, "category": "India-focused", "rank": 9, "summary": "The US Federal Reserve's signal of future rate cuts has triggered a positive rally in Indian stock markets, specifically the Nifty 50. This shift in US monetary policy improves global liquidity, benefiting emerging markets like India.", "reasoning": "The article identifies a shift in US monetary policy (Identification). This directly impacts Indian equity markets and capital inflows as investors move toward higher-yielding emerging market assets (Contextualization). It receives a rank of 9 because the Nifty 50 is explicitly mentioned as a primary beneficiary of this global shift (Impact)." }
+  "reasoning": "The article identifies a shift in US monetary policy (Identification). This directly impacts Indian equity markets and capital inflows as investors move toward higher-yielding emerging market assets (Contextualization). Because it specifically mentions the Nifty 50 and Mumbai markets, it is classified as India-focused with the highest priority rank (Impact)."
+}
+
+### CONSTRAINTS
+- Return **ONLY** a valid JSON object. 
+- No markdown code fences (e.g., do not use ```json).
+- The "reasoning" must be exactly 3–5 sentences following the framework above.
+- The "summary" must be ≤100 words.
+
+### ARTICLE TO ANALYZE
+{{ $json.content }}
+
+### OUTPUT SCHEMA
+{
+  "is_finance_related": <boolean>,
+  "category": <string>,
+  "rank": integer,
+  "title": {{ $json.title }},
+  "summary": <string>,
+  "reasoning": <string>
+}
+<end_of_turn>
+<start_of_turn>model
