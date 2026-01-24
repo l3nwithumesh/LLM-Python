@@ -1,0 +1,36 @@
+// Updated code
+
+const allItems = $input.all();
+let itemsMadeTheCut = 0; // Better counter for filtered items
+let emailBody = "Here is your daily financial digest:\n\n";
+
+
+for (const item of allItems) {
+  try {
+    const rawContent = item.json.output[0].content[0].text;
+    const cleanJson = rawContent.replace(/```json|```/g, '').trim();
+    const parsedData = JSON.parse(cleanJson);
+
+    // Skip ranks 1-6
+    if (parsedData.rank < 7) {
+      continue; 
+    }
+
+    itemsMadeTheCut++;
+    
+    emailBody += `________ Story #${itemsMadeTheCut} ________\n`;
+    emailBody += `RANK    : ${parsedData.rank}\n`;
+    emailBody += `TITLE   : ${parsedData.title}\n`;
+    emailBody += `SUMMARY : ${parsedData.summary}\n`;
+    emailBody += "_________________\n\n";
+    
+  } catch (error) {
+    emailBody += "\n[Error: Could not parse content for an item]\n\n";
+  }
+}
+
+if (itemsMadeTheCut === 0) {
+  emailBody = "There was no major financial story to summarize for today.";
+}
+
+return [{ json: { emailBody: emailBody, total_stories: itemsMadeTheCut } }];
