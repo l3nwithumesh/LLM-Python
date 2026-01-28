@@ -1,0 +1,80 @@
+const allItems = $input.all();
+let itemsMadeTheCut = 0; 
+
+let emailBody = `
+<div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: auto; color: #333; line-height: 1.6;">
+  <div style="background-color: #1a73e8; padding: 20px; border-radius: 8px 8px 0 0;">
+    <h2 style="color: #ffffff; margin: 0; font-size: 24px;">Daily Financial Digest</h2>
+    <p style="color: #e8f0fe; margin: 5px 0 0 0; font-size: 14px;">High-Priority Updates (Rank 7+)</p>
+  </div>
+  <div style="padding: 20px; border: 1px solid #e0e0e0; border-top: none; border-radius: 0 0 8px 8px;">
+`;
+
+for (const item of allItems) {
+  try {
+    // 1. Navigate the specific path from your schema
+    const rawData = item.json.output[0].content[0].text;
+    
+    // 2. Flexible Parsing: Handle both string and object formats
+    let parsedData;
+    if (typeof rawData === 'string') {
+      parsedData = JSON.parse(rawData);
+    } else {
+      parsedData = rawData;
+    }
+
+    // 3. The Filter Logic
+    const itemRank = Number(parsedData.rank);
+
+    // If rank is less than 7, skip it entirely
+    if (isNaN(itemRank) || itemRank < 7) {
+      continue; 
+    }
+
+    // 4. Build the HTML for items that "Make the Cut"
+    itemsMadeTheCut++;
+    
+    emailBody += `
+    <div style="margin-bottom: 25px; padding-bottom: 15px; border-bottom: 1px dotted #ccc;">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td align="left" style="font-size: 18px; font-weight: bold; color: #1a73e8; padding-bottom: 8px;">
+            ${parsedData.title || "Untitled Story"}
+          </td>
+          <td align="right" width="80" style="vertical-align: top;">
+            <span style="background: #1a73e8; color: #ffffff; padding: 4px 10px; border-radius: 15px; font-size: 12px; font-weight: bold;">
+              RANK ${itemRank}
+            </span>
+          </td>
+        </tr>
+      </table>
+      <p style="margin: 10px 0 0 0; color: #555; font-size: 15px;">
+        ${parsedData.summary}
+      </p>
+      <div style="margin-top: 10px; font-size: 12px; color: #888;">
+        <strong>Category:</strong> ${parsedData.category || 'N/A'}
+      </div>
+    </div>
+    `;
+    
+  } catch (error) {
+    console.error("Path or Parsing error:", error);
+  }
+}
+
+// 5. Final output logic
+if (itemsMadeTheCut === 0) {
+  emailBody = `
+    <div style="font-family: Arial, sans-serif; text-align: center; padding: 60px 20px; border: 1px solid #e0e0e0; border-radius: 8px;">
+      <h3 style="color: #999;">No high-priority (Rank 7+) stories found.</h3>
+      <p style="color: #ccc;">Processed ${allItems.length} stories, but none reached the threshold.</p>
+    </div>`;
+} else {
+  emailBody += `
+    <footer style="font-size: 12px; color: #999; margin-top: 20px; text-align: center;">
+      You received <strong>${itemsMadeTheCut}</strong> high-priority updates.
+    </footer>
+  </div></div>`;
+}
+
+return [{ json: { emailBody: emailBody, total_stories: itemsMadeTheCut } }];
